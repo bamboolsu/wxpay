@@ -1,5 +1,6 @@
 package com.pb.util;
 
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -25,6 +26,8 @@ public class CreateQRCode {
 		String nonce_str = UUID.randomUUID().toString().trim()
 				.replaceAll("-", "");
 		String body = "商品或支付单简要描述";
+		//java web项目乱码
+		body = URLEncoder.encode(body);
 		String out_trade_no = new Date().getTime() + "";
 		int total_fee = 1;
 		String spbill_create_ip = prop.get("spbill_create_ip");
