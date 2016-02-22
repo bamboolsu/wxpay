@@ -26,7 +26,7 @@ public class CreateQRCode {
 		String nonce_str = UUID.randomUUID().toString().trim()
 				.replaceAll("-", "");
 		String body = "商品或支付单简要描述";
-		//java web项目乱码
+		// java web项目乱码
 		body = URLEncoder.encode(body);
 		String out_trade_no = new Date().getTime() + "";
 		int total_fee = 1;
@@ -66,7 +66,8 @@ public class CreateQRCode {
 		System.out.println(xml);
 		// 统一下单
 		String url = "https://api.mch.weixin.qq.com/pay/unifiedorder";
-		String returnXml = HttpUtil.doPostStr(url, xml);
+		// String returnXml = HttpUtil.doPostStr(url, xml);
+		String returnXml = HttpRequest.sendPost(url, xml);
 		XStream xstream2 = new XStream(new DomDriver());
 		xstream2.alias("xml", OrderReturn.class);
 		OrderReturn or = (OrderReturn) xstream2.fromXML(returnXml);
