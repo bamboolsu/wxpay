@@ -2,6 +2,9 @@ package com.pb.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.UUID;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -10,7 +13,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.jfinal.kit.Prop;
+import com.jfinal.kit.PropKit;
 import com.pb.entity.OrderMessage;
+import com.pb.entity.QueryOrder;
+import com.pb.util.HttpRequest;
+import com.pb.util.Sign;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyNameCoder;
 import com.thoughtworks.xstream.io.xml.XppDriver;
@@ -36,7 +44,37 @@ public class IndexServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		System.out.println("doGet");
+		// 测试查询订单接口
+		QueryOrder o = new QueryOrder();
+		// 读取配置文件
+		Prop prop = PropKit.use("config.properties");
+		String appid = prop.get("appid");
+		String mch_id = prop.get("mch_id");
+		String nonce_str = UUID.randomUUID().toString().trim()
+				.replaceAll("-", "");
+		String out_trade_no = "20160310114157104661";
+		o.setAppid(appid);
+		o.setMch_id(mch_id);
+		o.setNonce_str(nonce_str);
+		o.setOut_trade_no(out_trade_no);
+		SortedMap<Object, Object> p = new TreeMap<Object, Object>();
+		p.put("appid", appid);
+		p.put("mch_id", mch_id);
+		p.put("nonce_str", nonce_str);
+		p.put("out_trade_no", out_trade_no);
+		String key = prop.get("key");
+		// 得到签名
+		String sign = Sign.createSign("utf-8", p, key);
+		o.setSign(sign);
+		// 转换为XML
+		XStream xstream = new XStream(new XppDriver(new XmlFriendlyNameCoder(
+				"_-", "_")));
+		xstream.alias("xml", QueryOrder.class);
+		String xml = xstream.toXML(o);
+		System.out.println(xml);
+		String url = "https://api.mch.weixin.qq.com/pay/orderquery";
+		String returnXml = HttpRequest.sendPost(url, xml);
+		System.out.println(returnXml);
 	}
 
 	/**
